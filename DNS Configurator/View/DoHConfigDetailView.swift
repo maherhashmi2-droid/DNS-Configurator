@@ -1,5 +1,5 @@
 //
-//  DoHConfigView.swift
+//  DoHConfigDetailView.swift
 //  DNS Configurator
 //
 //  Created by Takahiko Inayama on 2020/09/20.
@@ -10,23 +10,23 @@ import NetworkExtension
 
 struct DoHConfigDetailView: View {
     let config: DoHConfig
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.presentationMode) private var presentationMode
     @EnvironmentObject var dnsSettings: DNSSettings
     
     var body: some View {
         VStack {
             DoHConfigView(config: config)
-            Button(action: {
+            Button("Select this server") {
                 applyDoH(config: config)
                 presentationMode.wrappedValue.dismiss()
-            }, label: {
-                Text("Select this server")
-            })
-        }.padding(.bottom).navigationBarTitle(config.displayText)
+            }
+        }
+        .padding(.bottom)
+        .navigationTitle(config.displayText)
     }
     
     func applyDoH(config: DoHConfig) {
-        NEDNSSettingsManager.shared().loadFromPreferences { loadError in
+        NEDNSSettingsManager.shared().loadFromPreferences { [dnsSettings] loadError in
             if let loadError = loadError {
                 print(loadError)
                 return
@@ -41,18 +41,24 @@ struct DoHConfigDetailView: View {
                     return
                 }
                 
-                dnsSettings.active = dohSettings
-                dnsSettings.resolverEnabled = NEDNSSettingsManager.shared().isEnabled
+                Task { @MainActor in
+                    dnsSettings.active = dohSettings
+                    dnsSettings.resolverEnabled = NEDNSSettingsManager.shared().isEnabled
+                }
             }
         }
     }
 }
 
-
 struct DoHConfigDetailView_Previews: PreviewProvider {
-    static let dnsSettings = DNSSettings()
-    @State static var selectedConfig: DoHConfig?
     static var previews: some View {
-        DoHConfigDetailView(config: DoHConfig(servers:  [ "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844" ], serverURL: "https://cloudflare-dns.com/dns-query", displayText: "Google Public DNS")).environmentObject(dnsSettings)
+        DoHConfigDetailView(
+            config: DoHConfig(
+                servers: ["8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"],
+                serverURL: "https://dns.google/dns-query",
+                displayText: "Google Public DNS"
+            )
+        )
+        .environmentObject(DNSSettings())
     }
 }

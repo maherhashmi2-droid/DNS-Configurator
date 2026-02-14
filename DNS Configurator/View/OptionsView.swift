@@ -9,18 +9,11 @@ import SwiftUI
 import NetworkExtension
 
 struct OptionsView: View {
-    @State var showAlert = false
-    @State var showRemovalAlert = false {
-        didSet {
-            showAlert = showRemovalAlert || showActiveAlert
-        }
-    }
-    @State var showActiveAlert = false {
-        didSet {
-            showAlert = showRemovalAlert || showActiveAlert
-        }
-    }
+    @State private var showAlert = false
+    @State private var showRemovalConfirmation = false
+    @State private var showActiveAlert = false
     @EnvironmentObject var dnsSettings: DNSSettings
+    @Environment(\.openURL) private var openURL
     
     var body: some View {
         VStack {
@@ -28,39 +21,46 @@ struct OptionsView: View {
                 .font(.headline)
             List {
                 Section(header: Text("Options")) {
-                    if (dnsSettings.active != nil) {
-                        Button(action: {validateToRemoveDoH()}) {
+                    if dnsSettings.active != nil {
+                        Button(action: { validateToRemoveDoH() }) {
                             Text("Remove the resolver setting")
-                                .foregroundColor(Color.red)
+                                .foregroundColor(.red)
                         }
                         .alert(isPresented: $showAlert) {
-                            if (showActiveAlert) {
+                            if showActiveAlert {
                                 return Alert(
                                     title: Text("Can't remove active setting"),
-                                    message: Text("Please select another DNS provider in Setting app.")
+                                    message: Text("Please select another DNS provider in Setting app."),
+                                    dismissButton: .default(Text("OK")) {
+                                        showActiveAlert = false
+                                    }
                                 )
                             } else {
                                 return Alert(
                                     title: Text("Confirmation"),
                                     message: Text("Are you sure to remove the resolver setting?"),
-                                    primaryButton: .destructive(Text("Remove"), action: {dnsSettings.removeDoH()}),
-                                    secondaryButton: .cancel(Text("Cancel"), action: {showRemovalAlert.toggle()})
+                                    primaryButton: .destructive(Text("Remove")) {
+                                        dnsSettings.removeDoH()
+                                        showRemovalConfirmation = false
+                                    },
+                                    secondaryButton: .cancel {
+                                        showRemovalConfirmation = false
+                                    }
                                 )
                             }
                         }
-           
                     } else {
                         Text("No options available.")
-                            .foregroundColor(Color.gray)
+                            .foregroundColor(.gray)
                     }
                 }
                 
                 Section(header: Text("About This App")) {
-                    Button(action: {
-                        UIApplication.shared.open(URL(string: "https://github.com/TETRA2000/DNS-Configurator")!)
-                    }, label: {
-                        Text("Source Code (github.com)")
-                    })
+                    Button("Source Code (github.com)") {
+                        if let url = URL(string: "https://github.com/TETRA2000/DNS-Configurator") {
+                            openURL(url)
+                        }
+                    }
                 }
             }
         }
@@ -73,18 +73,22 @@ struct OptionsView: View {
                 return
             }
             
-            showActiveAlert = NEDNSSettingsManager.shared().isEnabled
-            if !showActiveAlert {
-                showRemovalAlert = true
+            Task { @MainActor in
+                let isEnabled = NEDNSSettingsManager.shared().isEnabled
+                if isEnabled {
+                    showActiveAlert = true
+                } else {
+                    showRemovalConfirmation = true
+                }
+                showAlert = true
             }
         }
     }
 }
 
-
 struct OptionsView_Previews: PreviewProvider {
-    static let dnsSettings = DNSSettings()
     static var previews: some View {
-        OptionsView().environmentObject(dnsSettings)
+        OptionsView()
+            .environmentObject(DNSSettings())
     }
 }
