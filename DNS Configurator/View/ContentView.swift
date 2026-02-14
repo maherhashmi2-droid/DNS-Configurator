@@ -10,7 +10,8 @@ import NetworkExtension
 
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    var dnsSettings = DNSSettings()
+    @StateObject private var dnsSettings = DNSSettings()
+    
     var body: some View {
         if horizontalSizeClass == .compact {
             TabView {
@@ -37,21 +38,21 @@ struct ContentView: View {
             }
         } else {
             NavigationView {
-                List() {
+                List {
                     NavigationLink(destination: DoHConfigListView().environmentObject(dnsSettings)) {
-                        Image(systemName: "list.dash")
-                        Text("DNS Server")
+                        Label("DNS Server", systemImage: "list.dash")
                     }
                     NavigationLink(destination: DoHStatusView().environmentObject(dnsSettings)) {
-                        Image(systemName: "waveform.path")
-                        Text("Status")
+                        Label("Status", systemImage: "waveform.path")
                     }
                     NavigationLink(destination: OptionsView().environmentObject(dnsSettings)) {
-                        Image(systemName: "wrench.fill")
-                        Text("Extras")
+                        Label("Extras", systemImage: "wrench.fill")
                     }
                 }
-            }.navigationBarHidden(false)
+                
+                Text("Select an option")
+                    .foregroundColor(.secondary)
+            }
         }
     }
 }

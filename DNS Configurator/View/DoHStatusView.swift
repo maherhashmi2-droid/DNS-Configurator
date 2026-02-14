@@ -10,13 +10,14 @@ import NetworkExtension
 
 struct DoHStatusView: View {
     @EnvironmentObject var dnsSettings: DNSSettings
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack {
-            if let dnsSettings = dnsSettings.active,
-               let servers = dnsSettings.servers,
-               let serverURL = dnsSettings.serverURL
+            if let activeSettings = dnsSettings.active,
+               let serverURL = activeSettings.serverURL
             {
+                let servers = activeSettings.servers
                 let config = DoHConfig(servers: servers, serverURL: serverURL.absoluteString, displayText: "")
                 
                 Text("Current Configuration")
@@ -24,20 +25,23 @@ struct DoHStatusView: View {
                 DoHConfigView(config: config)
             } else {
                 Text("No DNS server selected.")
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(.gray)
             }
-        }.onAppear(perform: {
+        }
+        .onAppear {
             dnsSettings.loadDoH()
-        }).onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            dnsSettings.loadDoH()
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                dnsSettings.loadDoH()
+            }
         }
     }
 }
 
-
 struct DoHStatusView_Previews: PreviewProvider {
-    static let dnsSettings = DNSSettings()
     static var previews: some View {
-        DoHStatusView().environmentObject(dnsSettings)
+        DoHStatusView()
+            .environmentObject(DNSSettings())
     }
 }

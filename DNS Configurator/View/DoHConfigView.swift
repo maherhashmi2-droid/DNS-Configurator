@@ -13,7 +13,7 @@ struct DoHConfigView: View {
     var body: some View {
         List {
             Section(header: Text("Servers")) {
-                ForEach(config.servers, id: \.hashValue) { server in
+                ForEach(config.servers, id: \.self) { server in
                     Text(server)
                 }
             }
@@ -25,10 +25,14 @@ struct DoHConfigView: View {
     }
 }
 
-
-struct DoHConfiglView_Previews: PreviewProvider {
-    @State static var selectedConfig: DoHConfig?
+struct DoHConfigView_Previews: PreviewProvider {
     static var previews: some View {
-        DoHConfigView(config: DoHConfig(servers:  [ "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844" ], serverURL: "https://cloudflare-dns.com/dns-query", displayText: "Google Public DNS"))
+        DoHConfigView(
+            config: DoHConfig(
+                servers: ["8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"],
+                serverURL: "https://dns.google/dns-query",
+                displayText: "Google Public DNS"
+            )
+        )
     }
 }

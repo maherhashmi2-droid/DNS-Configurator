@@ -7,8 +7,9 @@
 
 import Foundation
 
-struct DoHConfig {
-    let servers: Array<String>
+struct DoHConfig: Identifiable {
+    let id = UUID()
+    let servers: [String]
     let serverURL: String
     let displayText: String
 }

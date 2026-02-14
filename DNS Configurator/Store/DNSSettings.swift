@@ -7,6 +7,7 @@
 
 import NetworkExtension
 
+@MainActor
 class DNSSettings: ObservableObject {
     @Published var active: NEDNSOverHTTPSSettings? = nil {
         didSet {
@@ -18,33 +19,37 @@ class DNSSettings: ObservableObject {
     @Published var resolverEnabled: Bool = false
     
     func loadDoH() {
-        NEDNSSettingsManager.shared().loadFromPreferences { loadError in
+        NEDNSSettingsManager.shared().loadFromPreferences { [weak self] loadError in
             if let loadError = loadError {
                 print(loadError)
-                self.active = nil
+                Task { @MainActor in
+                    self?.active = nil
+                }
                 return
             }
             
-            if let dnsSettings = NEDNSSettingsManager.shared().dnsSettings as? NEDNSOverHTTPSSettings {
-                self.active = dnsSettings
-                self.resolverEnabled = NEDNSSettingsManager.shared().isEnabled
-            } else {
-                self.active = nil
+            Task { @MainActor in
+                if let dnsSettings = NEDNSSettingsManager.shared().dnsSettings as? NEDNSOverHTTPSSettings {
+                    self?.active = dnsSettings
+                    self?.resolverEnabled = NEDNSSettingsManager.shared().isEnabled
+                } else {
+                    self?.active = nil
+                }
             }
         }
     }
     
     func removeDoH() {
-        NEDNSSettingsManager.shared().removeFromPreferences(completionHandler: {
-            removeError in
-            // TODO
+        NEDNSSettingsManager.shared().removeFromPreferences { [weak self] removeError in
             if let removeError = removeError {
                 print(removeError.localizedDescription)
                 return
             }
             
-            self.active = nil
-        })
+            Task { @MainActor in
+                self?.active = nil
+            }
+        }
     }
     
 }
