@@ -42,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A92817902B2F38D9000E0670 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A936587A2516F93100402DA5 /* DNS Configurator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DNS Configurator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A936587D2516F93100402DA5 /* DNS_ConfiguratorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNS_ConfiguratorApp.swift; sourceTree = "<group>"; };
 		A936587F2516F93100402DA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -123,6 +124,7 @@
 				A936587D2516F93100402DA5 /* DNS_ConfiguratorApp.swift */,
 				A93658812516F93300402DA5 /* Assets.xcassets */,
 				A93658862516F93300402DA5 /* Info.plist */,
+				A92817902B2F38D9000E0670 /* PrivacyInfo.xcprivacy */,
 				A93658832516F93300402DA5 /* Preview Content */,
 			);
 			path = "DNS Configurator";
